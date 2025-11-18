@@ -585,16 +585,11 @@ function handleProgressClick(event) {
  * Handle play/pause button click
  */
 function handlePlayPause() {
-  if (state.role === 'controller') {
-    // Send command to speaker
-    sendCommand(state.isPlaying ? 'pause' : 'play');
+  // Always control local audio
+  if (state.isPlaying) {
+    pauseAudio();
   } else {
-    // Local playback
-    if (state.isPlaying) {
-      pauseAudio();
-    } else {
-      playAudio();
-    }
+    playAudio();
   }
 }
 
@@ -605,10 +600,6 @@ function handlePlayPause() {
 function handleVolumeChange(event) {
   const value = parseInt(event.target.value, 10) / 100;
   setVolume(value);
-
-  if (state.role === 'controller') {
-    sendCommand('setVolume', { value });
-  }
 }
 
 /**
@@ -618,10 +609,6 @@ function handleVolumeChange(event) {
 function handleSpeedChange(event) {
   const value = parseInt(event.target.value, 10) / 100;
   setSpeed(value);
-
-  if (state.role === 'controller') {
-    sendCommand('setSpeed', { value });
-  }
 }
 
 /**
@@ -631,21 +618,14 @@ function handleSpeedChange(event) {
 function handleIntervalChange(event) {
   const value = parseFloat(event.target.value);
   setRepeatInterval(value);
-
-  if (state.role === 'controller') {
-    sendCommand('setInterval', { value });
-  }
 }
 
 /**
  * Handle stop button click
  */
 function handleStop() {
-  if (state.role === 'controller') {
-    sendCommand('stop');
-  } else {
-    stopAudio();
-  }
+  // Always control local audio
+  stopAudio();
 }
 
 /**
@@ -653,10 +633,6 @@ function handleStop() {
  */
 function handleRepeat() {
   toggleRepeat();
-
-  if (state.role === 'controller') {
-    sendCommand('setRepeat', { value: state.isRepeat });
-  }
 }
 
 /**
