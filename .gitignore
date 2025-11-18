@@ -9,4 +9,6 @@ cache/metadata/*
 .claude/
 pdrs.md
 plans.md
-*.png
+
+# Exclude root level images only
+/*.png
