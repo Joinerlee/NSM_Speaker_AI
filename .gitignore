@@ -1,0 +1,12 @@
+node_modules/
+.env
+cache/audio/*
+cache/metadata/*
+!cache/audio/.gitkeep
+!cache/metadata/.gitkeep
+
+# Local files
+.claude/
+pdrs.md
+plans.md
+*.png

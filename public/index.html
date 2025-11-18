@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI 음성 안내 - 과학관 음성 안내 서비스">
+  <title>AI 음성 안내</title>
+
+  <!-- Google Fonts - Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+
+  <!-- Application Script -->
+  <script src="/js/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>AI 음성 안내</h1>
+    </header>
+
+    <!-- Mascot Area -->
+    <div class="mascot-area">
+      <img src="/images/mascot.png" alt="과학관 마스코트" class="mascot-image">
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area card">
+      <label for="textInput" class="visually-hidden">읽어줄 텍스트</label>
+      <textarea
+        id="textInput"
+        placeholder="읽어줄 텍스트를 입력하세요..."
+        maxlength="5000"
+        aria-describedby="charCountDesc"
+      ></textarea>
+      <div class="input-footer">
+        <span class="char-count" id="charCountDesc">
+          <span id="charCount">0</span> / 5000
+        </span>
+        <label class="server-speaker-option">
+          <input type="checkbox" id="serverSpeakerCheckbox" checked>
+          <span>서버 스피커로 재생</span>
+        </label>
+        <button id="speakBtn" class="btn-primary" type="button">
+          읽어주기
+        </button>
+      </div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls card">
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="time-display">
+          <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+        </div>
+      </div>
+
+      <div class="control-buttons">
+        <button id="playPauseBtn" class="btn-control" disabled aria-label="재생/일시정지">
+          <span class="icon-play" aria-hidden="true">&#9654;</span>
+          <span class="icon-pause" style="display:none" aria-hidden="true">&#10074;&#10074;</span>
+        </button>
+        <button id="stopBtn" class="btn-control" disabled aria-label="정지">
+          <span aria-hidden="true">&#9632;</span>
+        </button>
+        <button id="repeatBtn" class="btn-control" data-active="false" aria-label="반복 재생" aria-pressed="false">
+          <span aria-hidden="true">&#128257;</span>
+        </button>
+      </div>
+
+      <div class="sliders">
+        <div class="slider-group">
+          <label for="volumeSlider">볼륨</label>
+          <input
+            type="range"
+            id="volumeSlider"
+            min="0"
+            max="100"
+            value="100"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="100"
+          >
+          <span id="volumeValue" aria-live="polite">100%</span>
+        </div>
+        <div class="slider-group">
+          <label for="speedSlider">속도</label>
+          <input
+            type="range"
+            id="speedSlider"
+            min="50"
+            max="200"
+            value="100"
+            step="10"
+            aria-valuemin="0.5"
+            aria-valuemax="2"
+            aria-valuenow="1"
+          >
+          <span id="speedValue" aria-live="polite">1.0x</span>
+        </div>
+        <div class="slider-group">
+          <label for="intervalSlider">반복 간격</label>
+          <input
+            type="range"
+            id="intervalSlider"
+            min="0"
+            max="10"
+            value="0"
+            step="0.5"
+            aria-valuemin="0"
+            aria-valuemax="10"
+            aria-valuenow="0"
+          >
+          <span id="intervalValue" aria-live="polite">0초</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-area card">
+      <h3>최근 재생 목록</h3>
+      <ul id="historyList" class="history-list" aria-label="최근 재생 목록">
+        <!-- History items will be added dynamically -->
+      </ul>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+  </div>
+</body>
+</html>

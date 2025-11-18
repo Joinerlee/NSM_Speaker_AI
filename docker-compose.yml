@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  nsm-speaker:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./cache:/app/cache
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=3000
+      - CACHE_MAX_SIZE=524288000
+    restart: unless-stopped
