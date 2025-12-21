@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const path = require('path');
 
 const { generateSpeech, getAvailableVoices, checkApiStatus } = require('../services/gemini');
@@ -245,17 +245,48 @@ router.post('/speak', async (req, res) => {
     }
 
     // Play audio on server using PowerShell (Windows)
-    console.log('Playing audio file:', audioPath);
-    const psCommand = `powershell -Command "(New-Object Media.SoundPlayer '${audioPath}').PlaySync()"`;
+    const absolutePath = path.resolve(audioPath);
+    console.log('Playing audio file:', absolutePath);
 
-    exec(psCommand, (error, stdout, stderr) => {
-      if (error) {
-        console.error('Audio playback error:', error);
-        console.error('stderr:', stderr);
+    // Use PowerShell with stdin to avoid path escaping issues
+    const psScript = `
+      $path = '${absolutePath.replace(/'/g, "''")}'
+      try {
+        $player = New-Object System.Media.SoundPlayer
+        $player.SoundLocation = $path
+        $player.PlaySync()
+        Write-Host "Playback completed"
+      } catch {
+        Write-Error $_.Exception.Message
+        exit 1
+      }
+    `;
+
+    const ps = spawn('powershell', ['-ExecutionPolicy', 'Bypass', '-Command', '-'], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    ps.stdout.on('data', (data) => { stdout += data.toString(); });
+    ps.stderr.on('data', (data) => { stderr += data.toString(); });
+
+    ps.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Audio playback error (code:', code, '):', stderr || stdout);
       } else {
-        console.log('Audio playback completed');
+        console.log('Audio playback completed successfully');
       }
     });
+
+    ps.on('error', (error) => {
+      console.error('Failed to start PowerShell:', error.message);
+    });
+
+    // Send script to PowerShell stdin
+    ps.stdin.write(psScript);
+    ps.stdin.end();
 
     res.json({
       success: true,
