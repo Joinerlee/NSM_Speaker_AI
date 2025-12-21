@@ -5,7 +5,9 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "tunnel": "npx localtunnel --port 3000 --subdomain nsm-speaker",
+    "deploy": "npm install && npm start"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",
