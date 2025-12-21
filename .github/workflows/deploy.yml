@@ -1,0 +1,55 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Create .env file
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "PORT=3000" >> .env
+          echo "NODE_ENV=production" >> .env
+        shell: bash
+
+      - name: Install dependencies
+        run: npm ci --production
+
+      - name: Stop existing server
+        run: |
+          taskkill /F /IM node.exe 2>nul || echo "No existing server"
+          taskkill /F /IM localtunnel.exe 2>nul || echo "No existing tunnel"
+        shell: cmd
+        continue-on-error: true
+
+      - name: Start server and tunnel
+        run: |
+          Start-Process -FilePath "npm" -ArgumentList "start" -NoNewWindow
+          Start-Sleep -Seconds 3
+          Start-Process -FilePath "npx" -ArgumentList "localtunnel", "--port", "3000", "--subdomain", "${{ secrets.TUNNEL_SUBDOMAIN }}" -NoNewWindow
+        shell: pwsh
+
+      - name: Health check
+        run: |
+          Start-Sleep -Seconds 5
+          $response = Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing -TimeoutSec 10
+          if ($response.StatusCode -eq 200) {
+            Write-Host "Server is running!"
+          } else {
+            throw "Server health check failed"
+          }
+        shell: pwsh
