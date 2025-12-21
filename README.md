@@ -116,6 +116,105 @@ npm start
 
 ---
 
+## 고정 URL 설정 (외부 접속용)
+
+로컬 네트워크 외부에서 접속하거나, IP가 자주 바뀌는 환경에서는 고정 URL을 사용하세요.
+
+### 방법 1: ngrok (추천 - 무료, 간편)
+
+1. **ngrok 설치**
+   - [ngrok.com](https://ngrok.com) 에서 회원가입 후 다운로드
+   - 또는 npm으로 설치: `npm install -g ngrok`
+
+2. **ngrok 실행**
+   ```bash
+   # 서버가 실행 중인 상태에서
+   ngrok http 3000
+   ```
+
+3. **고정 URL 확인**
+   ```
+   Forwarding  https://xxxx-xx-xx-xxx-xxx.ngrok-free.app -> http://localhost:3000
+   ```
+   이 URL을 휴대폰에서 접속하면 됩니다.
+
+4. **고정 도메인 설정 (선택)**
+   - ngrok 유료 플랜 사용 시 고정 도메인 가능
+   - 무료 플랜은 재시작 시 URL이 변경됨
+
+### 방법 2: Cloudflare Tunnel (무료, 고정 URL)
+
+1. **Cloudflare 계정 생성** - [dash.cloudflare.com](https://dash.cloudflare.com)
+
+2. **cloudflared 설치**
+   ```bash
+   # Windows (winget)
+   winget install Cloudflare.cloudflared
+   ```
+
+3. **터널 생성 및 실행**
+   ```bash
+   cloudflared tunnel login
+   cloudflared tunnel create nsm-speaker
+   cloudflared tunnel route dns nsm-speaker your-subdomain.your-domain.com
+   cloudflared tunnel run nsm-speaker
+   ```
+
+### 방법 3: 포트 포워딩 (공유기 설정)
+
+1. 공유기 관리 페이지 접속 (보통 192.168.0.1 또는 192.168.1.1)
+2. 포트 포워딩 설정에서 외부 3000 → 내부 PC IP:3000 매핑
+3. 외부 IP 확인: [whatismyip.com](https://whatismyip.com)
+4. `http://외부IP:3000` 으로 접속
+
+> 보안 주의: 포트 포워딩 시 외부에 노출되므로 필요시만 사용하세요.
+
+---
+
+## CI/CD 자동 배포 설정 (GitHub Actions)
+
+GitHub에 push하면 서버 PC에 자동 배포됩니다.
+
+### 1단계: 서버 PC에 Self-hosted Runner 설치
+
+1. GitHub 저장소 → Settings → Actions → Runners → New self-hosted runner
+2. Windows 선택 후 안내에 따라 설치
+3. Runner를 서비스로 등록 (자동 시작):
+   ```powershell
+   .\svc.ps1 install
+   .\svc.ps1 start
+   ```
+
+### 2단계: GitHub Secrets 설정
+
+저장소 → Settings → Secrets and variables → Actions → New repository secret
+
+| Secret 이름 | 값 |
+|------------|-----|
+| `GEMINI_API_KEY` | Google Gemini API 키 |
+| `TUNNEL_SUBDOMAIN` | localtunnel 서브도메인 (예: nsm-speaker) |
+
+### 3단계: 배포 확인
+
+1. main 브랜치에 push
+2. Actions 탭에서 배포 상태 확인
+3. `https://your-subdomain.loca.lt` 로 접속
+
+### 수동 배포 (스크립트 사용)
+
+```powershell
+# 서버 PC에서 직접 실행
+.\scripts\deploy.ps1 -Subdomain "nsm-speaker"
+```
+
+### 보안 주의사항
+
+- `.env` 파일은 절대 커밋하지 마세요 (이미 .gitignore에 포함)
+- API 키는 반드시 GitHub Secrets 사용
+- Self-hosted runner는 신뢰할 수 있는 PC에서만 실행
+
+---
+
 ## Docker 설치 (선택사항)
 
 ```bash
@@ -201,6 +300,9 @@ NSM_Speaker_AI/
 ### 서버 스피커에서 소리 안남
 - PC 볼륨 및 스피커 연결 확인
 - "서버 스피커로 재생" 체크박스가 선택되어 있는지 확인
+- PowerShell 실행 정책 확인: `Get-ExecutionPolicy` (Restricted면 `Set-ExecutionPolicy RemoteSigned` 실행)
+- 콘솔에서 에러 메시지 확인 (`npm run dev`로 실행 시 로그 출력됨)
+- Windows 오디오 서비스 실행 중인지 확인
 
 ### 캐시 초기화
 ```bash
